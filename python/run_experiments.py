@@ -50,7 +50,7 @@ class SpikeTest:
             "-O2",
             "-march=rv64gc",
             *compile_flags,
-            "main.c",
+            "./gemm/main.c",
             "-o",
             f"./compiled/{output_name}.elf"
         ]
@@ -92,7 +92,7 @@ class SpikeTest:
                     print("=== Testing Loop Orders ===")
                     for order, name in self.LOOP_ORDERS.items():
                         metrics = self.compile_and_run(
-                            [f"-DN={size}", f"-DNAIVE", f"-DMMORDER={order}", "naive_gemm.c"],
+                            [f"-DN={size}", f"-DNAIVE", f"-DMMORDER={order}", "./gemm/naive_gemm.c"],
                             f"naive_{name}", dcache_config, l2_config
                         )
 
@@ -111,7 +111,7 @@ class SpikeTest:
                     for impl in ["vector", "transpose"]:
                         
                         metrics = self.compile_and_run(
-                            [f"-DN={size}", f"-D{impl.upper()}", f"{impl}_gemm.c"],
+                            [f"-DN={size}", f"-D{impl.upper()}", f"./gemm/{impl}_gemm.c"],
                             impl, dcache_config, l2_config
                         )
                         results.append({
@@ -127,7 +127,7 @@ class SpikeTest:
 
                     for block_size in self.BLOCK_SIZES:
                         metrics = self.compile_and_run(
-                            [f"-DN={size}", f"-D{impl.upper()}", f"-DBLOCK_SIZE={block_size}", f"{impl}_gemm.c"],
+                            [f"-DN={size}", f"-D{impl.upper()}", f"-DBLOCK_SIZE={block_size}", f"./gemm/{impl}_gemm.c"],
                             f"blocked_{block_size}", dcache_config, l2_config
                         )
 
@@ -144,7 +144,7 @@ class SpikeTest:
                         })
                     
                     print("\n=== Testing GotoBLAS ===")
-                    metrics = self.compile_and_run([f"-DN={size}", "-DGOTO", "gotoblas.c"], "gotoblas", dcache_config, l2_config)
+                    metrics = self.compile_and_run([f"-DN={size}", "-DGOTO", "./gemm/gotoblas.c"], "gotoblas", dcache_config, l2_config)
 
                     results.append({
                         "Test": "GotoBLAS",
@@ -157,7 +157,7 @@ class SpikeTest:
                         "L2 Miss %": metrics["L2_miss"],
                     })
 
-            save_results(results, f"standard_metrics_{size}-2", "json")        
+            save_results(results, f"metrics_{size}", "json")        
         return results
 
 def save_results(data: List[Dict], filename: str, format_type: str = "json"):
@@ -175,6 +175,6 @@ if __name__ == "__main__":
     spike_tests = SpikeTest()
     
     print("Running standard experiments...")
-    standard_data = spike_tests.run_all_experiments()
-    save_results(standard_data, "standard_metrics-2", "json")
-    save_results(standard_data, "standard_metrics-2", "csv")
+    data = spike_tests.run_all_experiments()
+    save_results(data, "metrics", "json")
+    save_results(data, "metrics", "csv")

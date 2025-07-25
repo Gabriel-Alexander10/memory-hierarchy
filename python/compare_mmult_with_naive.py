@@ -9,7 +9,7 @@ from typing import List, Dict
 
 class CompareVectorAllocation:
     def __init__(self):
-        self.MATRIX_SIZES = [512]
+        self.MATRIX_SIZES = [128]
         
         self.L1_CONFIGS = [
             "dc=32:4:256"
@@ -75,7 +75,7 @@ class CompareVectorAllocation:
                     print("=== Testing Loop Orders ===")
                     for order, name in self.LOOP_ORDERS.items():
                         metrics = self.compile_and_run(
-                            [f"-DN={size}", f"-DNAIVE", f"-DMMORDER={order}", "naive_gemm.c", "main.c"],
+                            [f"-DN={size}", f"-DNAIVE", f"-DMMORDER={order}", "./gemm/naive_gemm.c", "./gemm/main.c"],
                             f"naive_gemm_{name}_{size}", dcache_config
                         )
 
@@ -90,7 +90,7 @@ class CompareVectorAllocation:
 
 
                         metrics = self.compile_and_run(
-                            [f"-DNMAX={size}", f"-DNAIVE", f"-DMMORDER={order}", "mmult.c"],
+                            [f"-DNMAX={size}", f"-DNAIVE", f"-DMMORDER={order}", "./gemm/mmult.c"],
                             f"mmult_{name}_{size}", dcache_config
                         )
 
@@ -122,4 +122,4 @@ if __name__ == "__main__":
     spike_tests = CompareVectorAllocation()
     print("Running standard experiments...")
     standard_data = spike_tests.run_all_experiments()
-    save_results(standard_data, "compare_vector_allocation_3", "json")
+    save_results(standard_data, "compare_vector_allocation", "json")
